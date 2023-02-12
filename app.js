@@ -123,3 +123,13 @@ calculateBtn.addEventListener("click", function (e) {
 clearBtn.addEventListener("click", () => {
   resetCalculator();
 });
+
+deleteBtn.addEventListener("click", () => {
+  if (b) {
+    b = Number.parseFloat(b.toString().slice(0, -1));
+    displayResult.textContent = `${b}`;
+  } else {
+    a = Number.parseFloat(a.toString().slice(0, -1));
+    displayResult.textContent = `${a}`;
+  }
+});
