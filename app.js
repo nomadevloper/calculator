@@ -1,95 +1,125 @@
 function add(a, b) {
-    return a+b;
+  return a + b;
 }
 
 function subtract(a, b) {
-    return a-b;
+  return a - b;
 }
 
 function multiply(a, b) {
-    return a*b;
+  return a * b;
 }
 
-function divide(a,b) {
-    if (b === 0) return 'Don\'t divde by 0!';
-    return a/b;
+function divide(a, b) {
+  if (b === 0) {
+    alert("Can't divde by 0!");
+    return;
+  }
+  return a / b;
 }
-
-function operate(operator, a, b) {
-    return operator(a, b);
-}
-
-const accumulator = document.querySelector(".accumulator");
-const currentNum = document.querySelector(".current-num");
-const nums = document.querySelectorAll(".num");
-const operators = document.querySelectorAll(".operator");
-const calculateBtn = document.querySelector("#calculate");
-
-let stringNum = "";
-let stringOperator = "";
-let a;
-let b;
-accumulator.textContent = "";
-currentNum.textContent = "0";
-
-nums.forEach(num => {
-    num.addEventListener("click", function() {
-        // 숫자버튼을 맨 처음 누를 경우
-        if (!stringOperator.length && !stringNum.length) {
-            stringNum = this.textContent;
-            currentNum.textContent = stringNum;
-            return;
-        } 
-
-        // operator 버튼이 눌린 뒤 처음 누를 경우
-        if (stringOperator.length && !stringNum.length) {
-            currentNum.textContent = "";
-        }
-
-        stringNum += this.textContent;
-        currentNum.textContent = stringNum;
-    });
-});
-
-operators.forEach(operator => {
-    operator.addEventListener("click", function(){
-        accumulator.textContent = currentNum.textContent + " " + this.textContent;
-        a = Number.parseFloat(currentNum.textContent);
-        stringNum = "";
-        stringOperator = this.id;
-    });
-});
-
-calculateBtn.addEventListener("click", function() {
-    // if (stringNum.length) {
-    //     storedNums.push(Number.parseInt(stringNum));
-    //     stringNum = "";
-    // }
-
-    accumulator.textContent += " " + currentNum.textContent + " " + this.textContent;
-    b = Number.parseFloat(currentNum.textContent);
-    const operator = stringToOperator(stringOperator);
-    const result = operate(operator, a, b);
-    currentNum.textContent = `${result}`;
-    stringOperator = "";
-});
 
 function stringToOperator(string) {
-    if (string === "divide") {
-        return divide;
-    } else if (string === "multiply") {
-        return multiply;
-    } else if (string === "subtract") {
-        return subtract;
-    } else if (string === "add") {
-        return add;
-    } else {
-        return;
-    }
+  if (string === "divide") {
+    return divide;
+  } else if (string === "multiply") {
+    return multiply;
+  } else if (string === "subtract") {
+    return subtract;
+  } else if (string === "add") {
+    return add;
+  } else {
+    return;
+  }
+}
+
+function operate(operatorString, a, b) {
+  const operator = stringToOperator(operatorString);
+  return operator(a, b);
+}
+
+function stringToSymbol(operatorString) {
+  let result;
+  if (operatorString === "add") {
+    result = "+";
+  } else if (operatorString === "subtract") {
+    result = "-";
+  } else if (operatorString === "multiply") {
+    result = "x";
+  } else if (operatorString === "divide") {
+    result = "÷";
+  }
+  return result;
+}
+
+function updateDisplayProcess() {
+  displayProcess.textContent = `${a}`;
+  if (operatorString) {
+    displayProcess.textContent += ` ${stringToSymbol(operatorString)}`;
+  }
 }
 
 function resetCalculator() {
-    stringNum = "";
-    stringOperator = "";
-
+  a = 0;
+  b = undefined;
+  operatorString = "";
+  isOperatorClicked = false;
+  displayProcess.textContent = "";
+  displayResult.textContent = `${a}`;
 }
+
+const displayProcess = document.querySelector(".display-process");
+const displayResult = document.querySelector(".display-result");
+const nums = document.querySelectorAll(".num");
+const operators = document.querySelectorAll(".operator");
+const calculateBtn = document.querySelector("#calculate");
+const deleteBtn = document.querySelector(".delete");
+const clearBtn = document.querySelector(".clear");
+
+let a = 0;
+let b;
+let isOperatorClicked = false;
+
+let operatorString = "";
+displayProcess.textContent = "";
+displayResult.textContent = `${a}`;
+
+nums.forEach((num) => {
+  num.addEventListener("click", function () {
+    if (isOperatorClicked) {
+      if (b === undefined) {
+        b = 0;
+      }
+      b = b * 10 + Number.parseInt(this.textContent);
+      displayResult.textContent = `${b}`;
+      return;
+    }
+    a = a * 10 + Number.parseInt(this.textContent);
+    displayResult.textContent = `${a}`;
+  });
+});
+
+operators.forEach((operator) => {
+  operator.addEventListener("click", function () {
+    operatorString = this.id;
+    isOperatorClicked = true;
+    b = undefined;
+    updateDisplayProcess();
+  });
+});
+
+calculateBtn.addEventListener("click", function (e) {
+  updateDisplayProcess();
+  // b가 눌리기 전
+  if (!b) {
+    displayProcess.textContent += " =";
+    return;
+  }
+  const result = operate(operatorString, a, b);
+  displayProcess.textContent += ` ${b} ${this.textContent}`;
+  displayResult.textContent = `${result}`;
+  a = result;
+});
+
+clearBtn.addEventListener("click", () => {
+  resetCalculator();
+});
