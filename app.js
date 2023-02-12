@@ -1,3 +1,78 @@
+const displayProcess = document.querySelector(".display-process");
+const displayResult = document.querySelector(".display-result");
+const nums = document.querySelectorAll(".num");
+const operators = document.querySelectorAll(".operator");
+const calculateBtn = document.querySelector("#calculate");
+const deleteBtn = document.querySelector(".delete");
+const clearBtn = document.querySelector(".clear");
+
+let a = 0;
+let b;
+let isOperatorClicked = false;
+
+let operatorString = "";
+displayProcess.textContent = "";
+displayResult.textContent = `${a}`;
+
+nums.forEach((num) => {
+  num.addEventListener("click", function () {
+    if (isOperatorClicked) {
+      if (b === undefined) {
+        b = 0;
+      }
+      b = b * 10 + Number.parseInt(this.textContent);
+      updateDisplayResult(b);
+      return;
+    }
+    a = a * 10 + Number.parseInt(this.textContent);
+    updateDisplayResult(a);
+  });
+});
+
+operators.forEach((operator) => {
+  operator.addEventListener("click", function () {
+    if (b !== undefined) {
+      const result = operate(operatorString, a, b);
+      a = result;
+      b = undefined;
+      updateDisplayResult(result);
+    }
+
+    operatorString = this.id;
+    isOperatorClicked = true;
+    // b = undefined;
+    updateDisplayProcess();
+  });
+});
+
+calculateBtn.addEventListener("click", function (e) {
+  //b 안눌린 경우
+  if (b === undefined) {
+    operatorString = "";
+    updateDisplayProcess();
+  } else {
+    // b 눌린 경우
+    updateDisplayProcess();
+    displayProcess.textContent += ` ${b}`;
+  }
+  displayProcess.textContent += ` ${this.textContent}`;
+  const result = operate(operatorString, a, b);
+  updateDisplayResult(result);
+  a = result;
+});
+
+clearBtn.addEventListener("click", () => {
+  resetCalculator();
+});
+
+deleteBtn.addEventListener("click", () => {
+  if (b !== undefined) {
+    b = deleteOneDigit(b);
+  } else {
+    a = deleteOneDigit(a);
+  }
+});
+
 function add(a, b) {
   return a + b;
 }
@@ -33,12 +108,18 @@ function stringToOperator(string) {
 }
 
 function operate(operatorString, a, b) {
-  const operator = stringToOperator(operatorString);
-  return operator(a, b);
+  let result;
+  if (!operatorString.length || b === undefined) {
+    result = a;
+  } else {
+    const operator = stringToOperator(operatorString);
+    result = operator(a, b);
+  }
+  return result;
 }
 
 function stringToSymbol(operatorString) {
-  let result;
+  let result = "";
   if (operatorString === "add") {
     result = "+";
   } else if (operatorString === "subtract") {
@@ -53,7 +134,7 @@ function stringToSymbol(operatorString) {
 
 function updateDisplayProcess() {
   displayProcess.textContent = `${a}`;
-  if (operatorString) {
+  if (operatorString.length) {
     displayProcess.textContent += ` ${stringToSymbol(operatorString)}`;
   }
 }
@@ -67,69 +148,15 @@ function resetCalculator() {
   displayResult.textContent = `${a}`;
 }
 
-const displayProcess = document.querySelector(".display-process");
-const displayResult = document.querySelector(".display-result");
-const nums = document.querySelectorAll(".num");
-const operators = document.querySelectorAll(".operator");
-const calculateBtn = document.querySelector("#calculate");
-const deleteBtn = document.querySelector(".delete");
-const clearBtn = document.querySelector(".clear");
-
-let a = 0;
-let b;
-let isOperatorClicked = false;
-
-let operatorString = "";
-displayProcess.textContent = "";
-displayResult.textContent = `${a}`;
-
-nums.forEach((num) => {
-  num.addEventListener("click", function () {
-    if (isOperatorClicked) {
-      if (b === undefined) {
-        b = 0;
-      }
-      b = b * 10 + Number.parseInt(this.textContent);
-      displayResult.textContent = `${b}`;
-      return;
-    }
-    a = a * 10 + Number.parseInt(this.textContent);
-    displayResult.textContent = `${a}`;
-  });
-});
-
-operators.forEach((operator) => {
-  operator.addEventListener("click", function () {
-    operatorString = this.id;
-    isOperatorClicked = true;
-    b = undefined;
-    updateDisplayProcess();
-  });
-});
-
-calculateBtn.addEventListener("click", function (e) {
-  updateDisplayProcess();
-  // b가 눌리기 전
-  if (!b) {
-    displayProcess.textContent += " =";
-    return;
+function deleteOneDigit(num) {
+  num = Number.parseFloat(num.toString().slice(0, -1));
+  if (Number.isNaN(num)) {
+    num = 0;
   }
-  const result = operate(operatorString, a, b);
-  displayProcess.textContent += ` ${b} ${this.textContent}`;
-  displayResult.textContent = `${result}`;
-  a = result;
-});
+  updateDisplayResult(num);
+  return num;
+}
 
-clearBtn.addEventListener("click", () => {
-  resetCalculator();
-});
-
-deleteBtn.addEventListener("click", () => {
-  if (b) {
-    b = Number.parseFloat(b.toString().slice(0, -1));
-    displayResult.textContent = `${b}`;
-  } else {
-    a = Number.parseFloat(a.toString().slice(0, -1));
-    displayResult.textContent = `${a}`;
-  }
-});
+function updateDisplayResult(num) {
+  displayResult.textContent = `${num}`;
+}
